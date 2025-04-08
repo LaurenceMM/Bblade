@@ -1,0 +1,70 @@
+let stadium = {
+  scale: 2,
+  radius: 0.93,
+  canvas: undefined,
+  ctx: undefined,
+  sampleDist: 0.01,
+  antiCircling: 120,
+  antiCirclingForce: 8,
+  antiCirclingDrag: 0.1,
+  setup: function() {
+    this.canvas = document.getElementById("stadium")
+    this.ctx = this.canvas.getContext("2d")
+  },
+  drawStadium: function() {
+    let imageData = this.ctx.createImageData(this.canvas.width, this.canvas.height)
+    let data = imageData.data
+    
+    let canvasRadius = this.canvas.width/2
+
+    for(let i = 0; i < data.length; i+=4) {
+      let x = (i/4) % this.canvas.width
+      let y = Math.floor((i/4) / this.canvas.width)
+      let dist = distance(x+0.5, y+0.5, this.canvas.width/2, this.canvas.height/2)/canvasRadius
+
+      let rgb = {r: 0, g: 0, b: 0}
+
+      if(dist < this.radius){
+        let value = 190 - Math.abs(this.getSlope(dist)*20)
+        rgb.r = rgb.g = rgb.b = value
+        data[i+3] = 255
+      }else{
+        rgb.r = 255
+        rgb.g = 255
+        rgb.b = 255
+      }
+
+      data[i] = rgb.r
+      data[i+1] = rgb.g
+      data[i+2] = rgb.b
+    }
+    this.ctx.putImageData(imageData, 0, 0)
+    
+    this.ctx.strokeStyle = "darkgray"
+    this.ctx.lineWidth = 5
+    this.ctx.beginPath()
+    this.ctx.arc(this.canvas.width/2, this.canvas.height/2, this.radius * this.canvas.width/2, 0, Math.PI*2)
+    this.ctx.stroke()
+  },
+  getSlope: function(dist) { 
+    let h1 = this.getHeight(dist-this.sampleDist/2)
+    let h2 = this.getHeight(dist+this.sampleDist/2)
+    
+    let slope = (h1-h2)/this.sampleDist
+
+    return slope
+  },
+  getHeight: function(dist) {
+    dist = Math.max(dist, 0.001)
+    dist /= this.radius
+    
+
+    //return (1 - Math.abs(Math.sin(dist * Math.PI)));
+    //return (1 - Math.abs(Math.sin(dist * Math.PI * 0.5))) * dist;
+    //return 1 / (1 + Math.exp(-10 * (dist - 0.5)));
+    //return 1-Math.abs(Math.cos(dist * Math.PI)*2)
+    return dist**3
+    //return Math.round(dist)*0.1+Math.pow(dist, 2)*0.9
+    return ((1-Math.abs(Math.sin(dist*Math.PI*2)))*0.08+Math.pow(dist, 2)*0.92) * 1.4
+  }
+}
