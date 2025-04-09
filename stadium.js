@@ -8,6 +8,7 @@ let stadium = {
   antiCircling: 120,
   antiCirclingForce: 8,
   antiCirclingDrag: 0.1,
+  type: 0,
   setup: function() {
     this.canvas = document.getElementById("stadium")
     this.ctx = this.canvas.getContext("2d")
@@ -30,6 +31,8 @@ let stadium = {
     }
   },
   drawStadium: function() {
+    this.type = parseInt(document.getElementById("stadiumType").value)
+
     let imageData = this.ctx.createImageData(this.canvas.width, this.canvas.height)
     let data = imageData.data
     
@@ -78,17 +81,16 @@ let stadium = {
 
     return slope
   },
+  stadiumTypes: [
+    (d) => d**3,
+    (d) => ((1-Math.abs(Math.sin(d*Math.PI*2)))*0.08+Math.pow(d, 2)*0.92) * 1.4,
+    (d) => 1 / (1 + Math.exp(-10 * (d - 0.5))),
+    (d) => (1 - Math.abs(Math.sin(d * Math.PI * 0.5))) * d
+  ],
   getHeight: function(dist) {
     dist = Math.max(dist, 0.001)
     dist /= this.radius
     
-
-    //return (1 - Math.abs(Math.sin(dist * Math.PI)));
-    //return (1 - Math.abs(Math.sin(dist * Math.PI * 0.5))) * dist;
-    //return 1 / (1 + Math.exp(-10 * (dist - 0.5)));
-    //return 1-Math.abs(Math.cos(dist * Math.PI)*2)
-    return dist**3
-    //return Math.round(dist)*0.1+Math.pow(dist, 2)*0.9
-    return ((1-Math.abs(Math.sin(dist*Math.PI*2)))*0.08+Math.pow(dist, 2)*0.92) * 1.4
+    return this.stadiumTypes[this.type](dist)
   }
 }

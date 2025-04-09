@@ -183,12 +183,13 @@ class beyC {
     }
 
     let skillMeter = Math.min(1, Math.max(0, (this.skillData.time-this.skillData.dur)/(this.skillData.cycle-this.skillData.dur)))
-
-    fxCtx.globalAlpha = 0.3
-    fxCtx.fillStyle = this.skillData.color
-    drawBar(skillMeter, this.x-12/2, this.y + this.radius, 12, 2)
-    //drawRadialBar(skillMeter, this.x, this.y, this.radius + 2)
-    fxCtx.globalAlpha = 1
+    
+    if(this.skillData.time > this.skillData.dur){
+      fxCtx.globalAlpha = 0.4
+      fxCtx.fillStyle = this.skillData.color
+      drawBar(skillMeter, this.x-12/2, this.y + this.radius, 12, 2)
+      fxCtx.globalAlpha = 1
+    }
 
     //drawRotatedImage(ctx, sprites[this.tipImg], this.x, this.y, angle, this.radius*2, this.radius*2)
     //drawRotatedImage(ctx, sprites[this.trackImg], this.x, this.y, angle, this.radius*2, this.radius*2)
@@ -269,7 +270,7 @@ class beyC {
     let d2 = distance(this.x + fx * force * multiplier, this.y + fy * force * multiplier, canvas.width/2, canvas.height/2)
 
     this.applyForce(fx, fy, force*multiplier)
-    this.applyForce(cx, cy, (d2-d1)*10)//10
+    this.applyForce(cx, cy, (d2-d1)*40)//10
   }
   update(){
     for(let obj of beys){
@@ -293,7 +294,14 @@ class beyC {
         let damageThis = Math.abs(impulse + speedDiff*this.knockbackMult/2) * 0.5 * obj.damadeMult
         let damageObj = Math.abs(impulse + speedDiff*obj.knockbackMult/2) * 0.5 * this.damadeMult
 
-        if(!(this.invincible && obj.invincible)){
+        if(Math.max(damageObj, damageThis)>0.5 && !(this.invincible && obj.invincible)){
+          let spx = this.x - dx * this.radius
+          let spy = this.y - dy * this.radius
+        
+          let contAngle = Math.atan2(this.y - obj.y, this.x - obj.x)
+          spraySparks(spx, spy, Math.abs(spinDiff/50), contAngle - Math.PI/2, (this.spin)*0.16)
+          spraySparks(spx, spy, Math.abs(spinDiff/50), contAngle + Math.PI/2, (obj.spin)*0.16)
+
           if(Math.random() < 0.5){
             this.invincible?obj.health -= damageObj:this.health -= damageThis
           }else{
@@ -301,13 +309,6 @@ class beyC {
           }
         }
         
-        let spx = this.x - dx * this.radius
-        let spy = this.y - dy * this.radius
-        
-        let contAngle = Math.atan2(this.y - obj.y, this.x - obj.x)
-        spraySparks(spx, spy, Math.abs(spinDiff/50), contAngle - Math.PI/2, (this.spin)*0.16)
-        spraySparks(spx, spy, Math.abs(spinDiff/50), contAngle + Math.PI/2, (obj.spin)*0.16)
-
         if(!(this.freezeSpin || this.invincible)) this.spin -= spinDiff * (obj.mass/combinedMass) * hitStr * this.damadeMult
         this.posCorrection(dx, dy, correction*(obj.mass/combinedMass))
         this.applyForce(dx, dy, correction*(obj.mass/combinedMass))
@@ -353,16 +354,16 @@ async function setupScene() {
   particles = []
 
   beys = []
-  for (let i = 0; i < 6; i++) {//6
+  for (let i = 0; i < parseFloat(document.getElementById("beyAmount").value); i++) {//6
     let type = ["attack", "defence", "stamina"][Math.floor(Math.random()*3)]//["attack", "defence"][i%2]
     
     let radius = valuePicker(type, 
       3 * Math.random() + 5, 
-      5 * Math.random() + 5, 
+      3 * Math.random() + 7, 
       5 * Math.random() + 5)
 
     let tipCircumference = valuePicker(type, 
-      Math.random() * 0.05 + 0.1, 
+      Math.random() * 0.05 + 0.07, 
       Math.random() * 0.05 + 0.03,
       Math.random() * 0.03 + 0.02)
 
@@ -422,7 +423,7 @@ function logic(pass) {
   }
   for(let i = 0; i<beys.length; i++){
     let obj = beys[i]
-    obj.stadiumPhysics(4)//3
+    obj.stadiumPhysics(10)//4
     
     obj.skill()
 

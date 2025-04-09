@@ -12,7 +12,15 @@
     <canvas id="effects"></canvas>
     <canvas id="canvas"></canvas>
   </div>
-  <input type="number" value="1" id="simSpeed">
+  <button onclick="setupScene()">Reset</button><br>
+  Frame per Frame:<input type="number" value="1" id="simSpeed"><br>
+  Beys:<input type="number" value="6" id="beyAmount"><br>
+  ARENA Type:<select id="stadiumType">
+    <option value="0">Classic</option>
+    <option value="1">Inner Bowl</option>
+    <option value="2">Bleachers</option>
+    <option value="3">King of the Hill</option>
+  </select>
   <script src="particles.js"></script>
   <script src="assetLoading.js"></script>
   <script src="utils.js"></script>
