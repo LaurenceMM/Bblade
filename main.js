@@ -366,7 +366,7 @@ async function setupScene() {
       Math.random() * 0.05 + 0.03,
       Math.random() * 0.03 + 0.02)
 
-    let spin = 100 * (Math.random()<0.5?1:-1) //0.95
+    let spin = 100 * (Math.random()<0.95?1:-1) //0.95
     let mass = radius
 
     let angle = Math.PI*2 * Math.random()
