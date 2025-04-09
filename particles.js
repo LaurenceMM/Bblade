@@ -12,7 +12,7 @@ class beyPartC {
     let temp = Math.random()*Math.PI*2
     let dx = Math.cos(temp)
     let dy = Math.sin(temp)
-    let impulse = (Math.random()*0.5+0.5) * spin * 0.04
+    let impulse = (Math.random()*0.5+0.5) * spin * 0.1
     this.sx += dx * impulse
     this.sy += dy * impulse
   }
@@ -32,7 +32,7 @@ class beyPartC {
     this.sx += dx * slope * g
     this.sy += dy * slope * g
 
-    let friction = Math.max(0.5, Math.min(Math.abs(this.spin) * 0.03, 0.9))
+    let friction = Math.max(0.5, Math.min(Math.abs(this.spin) * 0.03, 0.95))
     this.sx *= friction
     this.sy *= friction
 
