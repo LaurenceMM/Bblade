@@ -60,7 +60,7 @@ class beyC {
     particles.push(new beyPartC(this.x, this.y, this.sx, this.sy, this.spin, this.tipImg, this.radius))
     particles.push(new beyPartC(this.x, this.y, this.sx, this.sy, this.spin, this.trackImg, this.radius))
     particles.push(new beyPartC(this.x, this.y, this.sx, this.sy, this.spin, this.layerImg, this.radius))
-    particles.push(new beyPartC(this.x, this.y, this.sx, this.sy, this.spin, this.tipImg, this.radius))  
+    particles.push(new beyPartC(this.x, this.y, this.sx, this.sy, this.spin, this.boltImg, this.radius))  
 
     return "dead"
   }
