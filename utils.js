@@ -51,3 +51,12 @@ function drawRadialBar(percentage, x, y, radius) {
   fxCtx.lineTo(x, y)
   fxCtx.fill()
 }
+
+function valuePicker(type, att, def, sta) {
+  switch(type){
+    case "attack": return att
+    case "defence": return def
+    case "stamina": return sta
+    default: console.error("Unknown Type:", type)
+  }
+}

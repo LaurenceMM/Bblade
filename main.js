@@ -32,7 +32,7 @@ class beyC {
     this.trailFx = []
 
     this.ring = "none"
-    this.type = type//["attack", "defence"][Math.floor(Math.random()*2)]
+    this.type = type
 
     this.skillData = {
       time: 60 * 20 * Math.random(),
@@ -41,11 +41,12 @@ class beyC {
       color: ""
     }
 
-    this.skillData.cycle = type == "attack"?60*10:60*10
-    this.skillData.dur = type == "attack"?60:60*4
-    this.skillData.color = type == "attack"?"red":"#3377ff"
+    this.skillData.cycle = valuePicker(this.type, 60*10, 60*12, 60*10)
+    this.skillData.dur = valuePicker(this.type, 60, 60*1, 60*6)
+    this.skillData.color = valuePicker(this.type, "red" ,"#3377ff", "yellow")
     
     this.damadeMult = 1
+    this.knockbackMult = 1
     this.freezeSpin = false
     this.noKnockback = false
     this.invincible = false//Math.random() < 0.1?true:false
@@ -83,11 +84,26 @@ class beyC {
     this.skillData.time = Math.round(this.skillData.time)
     this.skillData.time--
     switch(this.type) {
+      case "stamina":
+        if(this.skillData.time == this.skillData.dur) {
+          this.freezeSpin = true
+          this.damadeMult = 0.01
+          this.knockbackMult = 0.01
+          this.ring = this.skillData.color
+        }
+        if(this.skillData.time <= 0){
+          this.freezeSpin = false
+          this.damadeMult = 1
+          this.knockbackMult = 1
+          this.skillData.time = this.skillData.cycle + (60*Math.random())
+          this.ring = "none"
+        }
+        break
       case "attack":
         if(this.skillData.time == this.skillData.dur) {
           //this.invincible = true
-          this.damadeMult = 0.1
-          this.noKnockback = true
+          this.damadeMult = 0.01
+          this.knockbackMult = 0.01
           this.ring = "#f40"
 
           if(beys.length == 1) break
@@ -117,7 +133,7 @@ class beyC {
         if(this.skillData.time <= 0){
           //this.invincible = false
           this.damadeMult = 1
-          this.noKnockback = false
+          this.knockbackMult = 1
           this.skillData.time = this.skillData.cycle + (60*Math.random())
           this.ring = "none"
         }
@@ -267,19 +283,21 @@ class beyC {
         let dx = (this.x-obj.x)/dist
         let dy = (this.y-obj.y)/dist
         let correction = combinedRad-dist
+        let speedDiff = distance(obj.sx, obj.sy, this.sx, this.sy)
         
         let spinDiff = this.spin + obj.spin
         let hitStr = 0.01
 
-        let impulse = (Math.abs(spinDiff)/(combinedMass*2)) + correction
+        let impulse = (Math.abs(spinDiff)/(combinedMass*2))
 
-        if(Math.abs(impulse) > 0.5 && !(this.invincible && obj.invincible)){
-          let damage = Math.abs(impulse) * 0.5
+        let damageThis = Math.abs(impulse + speedDiff*this.knockbackMult/2) * 0.5 * obj.damadeMult
+        let damageObj = Math.abs(impulse + speedDiff*obj.knockbackMult/2) * 0.5 * this.damadeMult
 
+        if(!(this.invincible && obj.invincible)){
           if(Math.random() < 0.5){
-            this.invincible?obj.health -= damage * obj.damadeMult:this.health -= damage * this.damadeMult
+            this.invincible?obj.health -= damageObj:this.health -= damageThis
           }else{
-            obj.invincible?this.health -= damage * this.damadeMult:obj.health -= damage * obj.damadeMult
+            obj.invincible?this.health -= damageThis:obj.health -= damageObj
           }
         }
         
@@ -292,11 +310,13 @@ class beyC {
 
         if(!(this.freezeSpin || this.invincible)) this.spin -= spinDiff * (obj.mass/combinedMass) * hitStr * this.damadeMult
         this.posCorrection(dx, dy, correction*(obj.mass/combinedMass))
-        if(!this.noKnockback) this.applyForce(dx, dy, impulse*(obj.mass/combinedMass))
+        this.applyForce(dx, dy, correction*(obj.mass/combinedMass))
+        if(!this.noKnockback) this.applyForce(dx, dy, impulse*(obj.mass/combinedMass) * this.knockbackMult)
         
         if(!(obj.freezeSpin || obj.invincible)) obj.spin -= spinDiff * (this.mass/combinedMass) * hitStr * obj.damadeMult
         obj.posCorrection(-dx, -dy, correction*(this.mass/combinedMass))
-        if(!obj.noKnockback) obj.applyForce(-dx, -dy, impulse*(this.mass/combinedMass))
+        obj.applyForce(-dx, -dy, correction*(this.mass/combinedMass))
+        if(!obj.noKnockback) obj.applyForce(-dx, -dy, impulse*(this.mass/combinedMass) * obj.knockbackMult)
       }
     }
   }
@@ -322,29 +342,31 @@ let running = false
 
 setupScene()
 async function setupScene() {
-  setCanvSize(400) //300
-  stadium.drawStadium()
-  
   if(Object.keys(sprites).length === 0){
-    sprites = await loadImages(['la0.png', 'la1.png', 'la2.png', 'bo0.png', 'bo1.png', 'bo2.png', 'bo3.png', 'bo4.png', 'tr0.png', 'tr1.png', 'tr2.png', 'tr3.png', 'tiAttack.png', 'tiDefence.png'], "sprites/")
+    sprites = await loadImages(['la0.png', 'la1.png', 'la2.png', 'bo0.png', 'bo1.png', 'bo2.png', 'bo3.png', 'bo4.png', 'tr0.png', 'tr1.png', 'tr2.png', 'tr3.png', 'tiAttack.png', 'tiDefence.png', 'tiStamina.png', 'scratch0.png', 'scratch1.png', 'scratch2.png'], "sprites/")
   }
-  
+
+  setCanvSize(400) //300
+  if(stadium.markings.length == 0) stadium.details()
+  stadium.drawStadium()
+
   particles = []
 
   beys = []
   for (let i = 0; i < 6; i++) {//6
-    let type = ["attack", "defence"][Math.floor(Math.random()*2)]//["attack", "defence"][i%2]
+    let type = ["attack", "defence", "stamina"][Math.floor(Math.random()*3)]//["attack", "defence"][i%2]
     
-    let radius, tipCircumference
-    if(type == "attack"){
-      radius = 3 * Math.random() + 5
-      tipCircumference = Math.random() * 0.05 + 0.1
-    }else{
-      radius = 5 * Math.random() + 5
-      tipCircumference = Math.random() * 0.05 + 0.03
-    }
+    let radius = valuePicker(type, 
+      3 * Math.random() + 5, 
+      5 * Math.random() + 5, 
+      5 * Math.random() + 5)
 
-    let spin = 100 * (Math.random()<0.95?1:-1)
+    let tipCircumference = valuePicker(type, 
+      Math.random() * 0.05 + 0.1, 
+      Math.random() * 0.05 + 0.03,
+      Math.random() * 0.03 + 0.02)
+
+    let spin = 100 * (Math.random()<0.5?1:-1) //0.95
     let mass = radius
 
     let angle = Math.PI*2 * Math.random()
