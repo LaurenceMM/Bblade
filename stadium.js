@@ -88,9 +88,6 @@ let stadium = {
     (d) => (1 - Math.abs(Math.sin(d * Math.PI * 0.5))) * d
   ],
   getHeight: function(dist) {
-    dist = Math.max(dist, 0.001)
-    dist /= this.radius
-    
-    return this.stadiumTypes[this.type](dist)
+    return this.stadiumTypes[this.type](Math.max(dist, 0.001)/this.radius)
   }
 }
